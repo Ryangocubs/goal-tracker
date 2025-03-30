@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Goal Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 1rem 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    select, button {
+      padding: 0.5rem;
+      border-radius: 6px;
+      margin-right: 0.5rem;
+      border: 1px solid #ddd;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #f1f1f1;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      border-radius: 6px;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>My Goals</h2>
+    <input type="text" id="goalInput" placeholder="Enter your goal...">
+    <select id="timeframe">
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <button onclick="addGoal()">Add Goal</button>
+
+    <h3>Weekly Goals</h3>
+    <ul id="weeklyGoals"></ul>
+
+    <h3>Monthly Goals</h3>
+    <ul id="monthlyGoals"></ul>
+
+    <button onclick="clearCompletedGoals()">Clear Completed</button>
+  </div>
+
+  <script>
+    const weeklyList = document.getElementById('weeklyGoals');
+    const monthlyList = document.getElementById('monthlyGoals');
+
+    function addGoal() {
+      const input = document.getElementById('goalInput');
+      const type = document.getElementById('timeframe').value;
+      if (!input.value.trim()) return;
+
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${input.value}</span>
+        <button onclick="toggleComplete(this)">Done</button>
+      `;
+
+      if (type === 'weekly') {
+        weeklyList.appendChild(li);
+      } else {
+        monthlyList.appendChild(li);
+      }
+
+      input.value = '';
+    }
+
+    function toggleComplete(btn) {
+      const item = btn.parentElement.querySelector('span');
+      item.classList.toggle('completed');
+    }
+
+    function clearCompletedGoals() {
+      [weeklyList, monthlyList].forEach(list => {
+        const goals = Array.from(list.children);
+        goals.forEach(goal => {
+          const text = goal.querySelector('span');
+          if (text.classList.contains('completed')) {
+            list.removeChild(goal);
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
