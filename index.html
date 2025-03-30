@@ -76,6 +76,35 @@
     const weeklyList = document.getElementById('weeklyGoals');
     const monthlyList = document.getElementById('monthlyGoals');
 
+    function loadGoals() {
+      const stored = JSON.parse(localStorage.getItem('goals') || '{}');
+      ['weekly', 'monthly'].forEach(type => {
+        const list = type === 'weekly' ? weeklyList : monthlyList;
+        (stored[type] || []).forEach(goal => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <span class="${goal.completed ? 'completed' : ''}">${goal.text}</span>
+            <button onclick="toggleComplete(this)">Done</button>
+          `;
+          list.appendChild(li);
+        });
+      });
+    }
+
+    function saveGoals() {
+      const data = {
+        weekly: Array.from(weeklyList.children).map(li => ({
+          text: li.querySelector('span').textContent,
+          completed: li.querySelector('span').classList.contains('completed')
+        })),
+        monthly: Array.from(monthlyList.children).map(li => ({
+          text: li.querySelector('span').textContent,
+          completed: li.querySelector('span').classList.contains('completed')
+        }))
+      };
+      localStorage.setItem('goals', JSON.stringify(data));
+    }
+
     function addGoal() {
       const input = document.getElementById('goalInput');
       const type = document.getElementById('timeframe').value;
@@ -94,11 +123,13 @@
       }
 
       input.value = '';
+      saveGoals();
     }
 
     function toggleComplete(btn) {
       const item = btn.parentElement.querySelector('span');
       item.classList.toggle('completed');
+      saveGoals();
     }
 
     function clearCompletedGoals() {
@@ -111,7 +142,10 @@
           }
         });
       });
+      saveGoals();
     }
+
+    loadGoals();
   </script>
 </body>
 </html>
