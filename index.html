@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple Goal Tracker</title>
   <style>
+    :root {
+      --primary: #007bff;
+      --primary-light: #e3f0ff;
+      --accent: #28a745;
+      --danger: #dc3545;
+      --gray: #f1f1f1;
+    }
+
     body {
       font-family: sans-serif;
       background: #f9f9f9;
@@ -21,6 +29,7 @@
     }
     h2 {
       text-align: center;
+      color: var(--primary);
     }
     input[type="text"] {
       width: 100%;
@@ -28,23 +37,35 @@
       margin: 1rem 0;
       border: 1px solid #ddd;
       border-radius: 6px;
+      font-size: 16px;
     }
     select, button {
-      padding: 0.5rem;
+      padding: 0.5rem 1rem;
       border-radius: 6px;
-      margin-right: 0.5rem;
+      margin: 0.5rem 0.25rem 1rem 0;
       border: 1px solid #ddd;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
     ul {
       list-style: none;
       padding: 0;
     }
     li {
-      background: #f1f1f1;
+      background: var(--gray);
       margin: 0.5rem 0;
       padding: 0.5rem;
       display: flex;
       justify-content: space-between;
+      align-items: center;
       border-radius: 6px;
     }
     .completed {
@@ -52,7 +73,7 @@
       color: gray;
     }
     .collapsible {
-      background-color: #eee;
+      background-color: var(--primary-light);
       cursor: pointer;
       padding: 10px;
       width: 100%;
@@ -65,6 +86,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      color: var(--primary);
     }
     .collapsible .arrow {
       transition: transform 0.3s ease;
@@ -73,7 +95,7 @@
       transform: rotate(90deg);
     }
     .active, .collapsible:hover {
-      background-color: #ccc;
+      background-color: #cce4ff;
     }
     .content {
       padding: 0 10px;
@@ -122,7 +144,7 @@
           const li = document.createElement('li');
           li.innerHTML = `
             <span class="${goal.completed ? 'completed' : ''}">${goal.text}</span>
-            <button onclick="toggleComplete(this)">Done</button>
+            <button onclick="toggleComplete(this)" style="background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 4px;">Done</button>
           `;
           list.appendChild(li);
         });
@@ -151,7 +173,7 @@
       const li = document.createElement('li');
       li.innerHTML = `
         <span>${input.value}</span>
-        <button onclick="toggleComplete(this)">Done</button>
+        <button onclick="toggleComplete(this)" style="background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 4px;">Done</button>
       `;
 
       if (type === 'weekly') {
