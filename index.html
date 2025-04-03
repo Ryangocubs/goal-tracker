@@ -62,6 +62,15 @@
       font-size: 16px;
       border-radius: 6px;
       margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .collapsible .arrow {
+      transition: transform 0.3s ease;
+    }
+    .collapsible.active .arrow {
+      transform: rotate(90deg);
     }
     .active, .collapsible:hover {
       background-color: #ccc;
@@ -70,6 +79,11 @@
       padding: 0 10px;
       display: none;
       overflow: hidden;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   </style>
 </head>
@@ -83,12 +97,12 @@
     </select>
     <button onclick="addGoal()">Add Goal</button>
 
-    <button type="button" class="collapsible">Weekly Goals</button>
+    <button type="button" class="collapsible">Weekly Goals <span class="arrow">▶</span></button>
     <div class="content">
       <ul id="weeklyGoals"></ul>
     </div>
 
-    <button type="button" class="collapsible">Monthly Goals</button>
+    <button type="button" class="collapsible">Monthly Goals <span class="arrow">▶</span></button>
     <div class="content">
       <ul id="monthlyGoals"></ul>
     </div>
@@ -173,11 +187,14 @@
     document.querySelectorAll(".collapsible").forEach(button => {
       button.addEventListener("click", function() {
         this.classList.toggle("active");
+        const arrow = this.querySelector(".arrow");
         const content = this.nextElementSibling;
         if (content.style.display === "block") {
           content.style.display = "none";
+          arrow.innerHTML = "▶";
         } else {
           content.style.display = "block";
+          arrow.innerHTML = "▼";
         }
       });
     });
