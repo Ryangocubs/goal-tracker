@@ -51,6 +51,26 @@
       text-decoration: line-through;
       color: gray;
     }
+    .collapsible {
+      background-color: #eee;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+    .active, .collapsible:hover {
+      background-color: #ccc;
+    }
+    .content {
+      padding: 0 10px;
+      display: none;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -63,11 +83,15 @@
     </select>
     <button onclick="addGoal()">Add Goal</button>
 
-    <h3>Weekly Goals</h3>
-    <ul id="weeklyGoals"></ul>
+    <button type="button" class="collapsible">Weekly Goals</button>
+    <div class="content">
+      <ul id="weeklyGoals"></ul>
+    </div>
 
-    <h3>Monthly Goals</h3>
-    <ul id="monthlyGoals"></ul>
+    <button type="button" class="collapsible">Monthly Goals</button>
+    <div class="content">
+      <ul id="monthlyGoals"></ul>
+    </div>
 
     <button onclick="clearCompletedGoals()">Clear Completed</button>
   </div>
@@ -144,6 +168,19 @@
       });
       saveGoals();
     }
+
+    // Collapsible panels
+    document.querySelectorAll(".collapsible").forEach(button => {
+      button.addEventListener("click", function() {
+        this.classList.toggle("active");
+        const content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    });
 
     loadGoals();
   </script>
