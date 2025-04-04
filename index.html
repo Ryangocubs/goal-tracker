@@ -71,6 +71,13 @@
       justify-content: center;
       font-size: 18px;
     }
+    .listening-indicator {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 0.5rem;
+      color: var(--primary);
+      display: none;
+    }
     ul {
       list-style: none;
       padding: 0;
@@ -132,6 +139,8 @@
       <input type="text" id="goalInput" placeholder="Enter your goal...">
       <button class="mic-btn" onclick="startVoiceInput()">🎤</button>
     </div>
+    <div id="listeningIndicator" class="listening-indicator">Listening...</div>
+
     <select id="timeframe">
       <option value="weekly">Weekly</option>
       <option value="monthly">Monthly</option>
@@ -154,6 +163,7 @@
   <script>
     const weeklyList = document.getElementById('weeklyGoals');
     const monthlyList = document.getElementById('monthlyGoals');
+    const listeningIndicator = document.getElementById('listeningIndicator');
 
     function loadGoals() {
       const stored = JSON.parse(localStorage.getItem('goals') || '{}');
@@ -247,15 +257,18 @@
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
+      listeningIndicator.style.display = 'block';
       recognition.start();
 
       recognition.onresult = function(event) {
+        listeningIndicator.style.display = 'none';
         const transcript = event.results[0][0].transcript;
         document.getElementById('goalInput').value = transcript;
         addGoal();
       };
 
       recognition.onerror = function(event) {
+        listeningIndicator.style.display = 'none';
         alert('Voice input failed: ' + event.error);
       };
     }
