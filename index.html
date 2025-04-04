@@ -144,6 +144,8 @@
     <select id="timeframe">
       <option value="weekly">Weekly</option>
       <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+      <option value="5year">5-Year</option>
     </select>
     <button onclick="addGoal()">Add Goal</button>
 
@@ -157,18 +159,32 @@
       <ul id="monthlyGoals"></ul>
     </div>
 
+    <button type="button" class="collapsible">Yearly Goals <span class="arrow">▶</span></button>
+    <div class="content">
+      <ul id="yearlyGoals"></ul>
+    </div>
+
+    <button type="button" class="collapsible">5-Year Goals <span class="arrow">▶</span></button>
+    <div class="content">
+      <ul id="fiveYearGoals"></ul>
+    </div>
+
     <button onclick="clearCompletedGoals()">Clear Completed</button>
   </div>
 
   <script>
-    const weeklyList = document.getElementById('weeklyGoals');
-    const monthlyList = document.getElementById('monthlyGoals');
+    const goalLists = {
+      weekly: document.getElementById('weeklyGoals'),
+      monthly: document.getElementById('monthlyGoals'),
+      yearly: document.getElementById('yearlyGoals'),
+      "5year": document.getElementById('fiveYearGoals')
+    };
     const listeningIndicator = document.getElementById('listeningIndicator');
 
     function loadGoals() {
       const stored = JSON.parse(localStorage.getItem('goals') || '{}');
-      ['weekly', 'monthly'].forEach(type => {
-        const list = type === 'weekly' ? weeklyList : monthlyList;
+      Object.keys(goalLists).forEach(type => {
+        const list = goalLists[type];
         (stored[type] || []).forEach(goal => {
           const li = document.createElement('li');
           li.innerHTML = `
@@ -181,16 +197,13 @@
     }
 
     function saveGoals() {
-      const data = {
-        weekly: Array.from(weeklyList.children).map(li => ({
+      const data = {};
+      Object.keys(goalLists).forEach(type => {
+        data[type] = Array.from(goalLists[type].children).map(li => ({
           text: li.querySelector('span').textContent,
           completed: li.querySelector('span').classList.contains('completed')
-        })),
-        monthly: Array.from(monthlyList.children).map(li => ({
-          text: li.querySelector('span').textContent,
-          completed: li.querySelector('span').classList.contains('completed')
-        }))
-      };
+        }));
+      });
       localStorage.setItem('goals', JSON.stringify(data));
     }
 
@@ -205,11 +218,7 @@
         <button onclick="toggleComplete(this)" style="background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 4px;">Done</button>
       `;
 
-      if (type === 'weekly') {
-        weeklyList.appendChild(li);
-      } else {
-        monthlyList.appendChild(li);
-      }
+      goalLists[type].appendChild(li);
 
       input.value = '';
       saveGoals();
@@ -222,7 +231,7 @@
     }
 
     function clearCompletedGoals() {
-      [weeklyList, monthlyList].forEach(list => {
+      Object.values(goalLists).forEach(list => {
         const goals = Array.from(list.children);
         goals.forEach(goal => {
           const text = goal.querySelector('span');
@@ -234,7 +243,6 @@
       saveGoals();
     }
 
-    // Collapsible panels
     document.querySelectorAll(".collapsible").forEach(button => {
       button.addEventListener("click", function() {
         this.classList.toggle("active");
@@ -250,7 +258,6 @@
       });
     });
 
-    // Voice input
     function startVoiceInput() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = 'en-US';
