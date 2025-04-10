@@ -150,24 +150,16 @@
     <button onclick="addGoal()">Add Goal</button>
 
     <button type="button" class="collapsible">Weekly Goals <span class="arrow">▶</span></button>
-    <div class="content">
-      <ul id="weeklyGoals"></ul>
-    </div>
+    <div class="content"><ul id="weeklyGoals"></ul></div>
 
     <button type="button" class="collapsible">Monthly Goals <span class="arrow">▶</span></button>
-    <div class="content">
-      <ul id="monthlyGoals"></ul>
-    </div>
+    <div class="content"><ul id="monthlyGoals"></ul></div>
 
     <button type="button" class="collapsible">Yearly Goals <span class="arrow">▶</span></button>
-    <div class="content">
-      <ul id="yearlyGoals"></ul>
-    </div>
+    <div class="content"><ul id="yearlyGoals"></ul></div>
 
     <button type="button" class="collapsible">5-Year Goals <span class="arrow">▶</span></button>
-    <div class="content">
-      <ul id="fiveYearGoals"></ul>
-    </div>
+    <div class="content"><ul id="fiveYearGoals"></ul></div>
 
     <button onclick="clearCompletedGoals()">Clear Completed</button>
   </div>
@@ -181,10 +173,56 @@
     };
     const listeningIndicator = document.getElementById('listeningIndicator');
 
+    function makeDraggable(listElement, type) {
+      listElement.querySelectorAll("li").forEach((li, index) => {
+        li.setAttribute("draggable", true);
+        li.dataset.index = index;
+        li.dataset.type = type;
+
+        li.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", JSON.stringify({
+            index: li.dataset.index,
+            type: li.dataset.type
+          }));
+          li.classList.add("dragging");
+        });
+
+        li.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          li.style.borderTop = "2px solid #007bff";
+        });
+
+        li.addEventListener("dragleave", () => {
+          li.style.borderTop = "none";
+        });
+
+        li.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+          const fromList = goalLists[data.type];
+          const toIndex = [...listElement.children].indexOf(li);
+          const draggedItem = fromList.children[data.index];
+
+          if (draggedItem && draggedItem !== li) {
+            if (toIndex === listElement.children.length - 1) {
+              listElement.appendChild(draggedItem);
+            } else {
+              listElement.insertBefore(draggedItem, listElement.children[toIndex]);
+            }
+            saveGoals();
+            makeDraggable(listElement, type);
+          }
+          li.style.borderTop = "none";
+          document.querySelectorAll(".dragging").forEach(el => el.classList.remove("dragging"));
+        });
+      });
+    }
+
     function loadGoals() {
       const stored = JSON.parse(localStorage.getItem('goals') || '{}');
       Object.keys(goalLists).forEach(type => {
         const list = goalLists[type];
+        list.innerHTML = '';
         (stored[type] || []).forEach(goal => {
           const li = document.createElement('li');
           li.innerHTML = `
@@ -193,18 +231,8 @@
           `;
           list.appendChild(li);
         });
+        makeDraggable(list, type);
       });
-    }
-
-    function saveGoals() {
-      const data = {};
-      Object.keys(goalLists).forEach(type => {
-        data[type] = Array.from(goalLists[type].children).map(li => ({
-          text: li.querySelector('span').textContent,
-          completed: li.querySelector('span').classList.contains('completed')
-        }));
-      });
-      localStorage.setItem('goals', JSON.stringify(data));
     }
 
     function addGoal() {
@@ -219,9 +247,20 @@
       `;
 
       goalLists[type].appendChild(li);
-
       input.value = '';
       saveGoals();
+      makeDraggable(goalLists[type], type);
+    }
+
+    function saveGoals() {
+      const data = {};
+      Object.keys(goalLists).forEach(type => {
+        data[type] = Array.from(goalLists[type].children).map(li => ({
+          text: li.querySelector('span').textContent,
+          completed: li.querySelector('span').classList.contains('completed')
+        }));
+      });
+      localStorage.setItem('goals', JSON.stringify(data));
     }
 
     function toggleComplete(btn) {
@@ -284,3 +323,4 @@
   </script>
 </body>
 </html>
+
