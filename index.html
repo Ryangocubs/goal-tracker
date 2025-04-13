@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple Goal Tracker</title>
+  <title>Goal Tracker with Categories</title>
   <style>
     :root {
       --primary: #007bff;
@@ -20,7 +20,7 @@
       padding: 2rem;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
       background: white;
       padding: 2rem;
@@ -33,31 +33,30 @@
     }
     .input-row {
       display: flex;
-      gap: 0.5rem;
       flex-wrap: wrap;
-      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
     }
-    input[type="text"] {
-      flex: 1;
+    input[type="text"], select {
       padding: 0.5rem;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 16px;
     }
-    select, button {
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      font-size: 15px;
-      cursor: pointer;
+    input[type="text"] {
+      flex: 2;
+      min-width: 60%;
+    }
+    select {
+      flex: 1;
+      min-width: 30%;
     }
     button {
-      background-color: var(--primary);
-      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
       border: none;
-    }
-    button:hover {
-      background-color: #0056b3;
     }
     .mic-btn {
       background: white;
@@ -70,6 +69,13 @@
       align-items: center;
       justify-content: center;
       font-size: 18px;
+    }
+    .main-btn {
+      background-color: var(--primary);
+      color: white;
+    }
+    .main-btn:hover {
+      background-color: #0056b3;
     }
     .listening-indicator {
       text-align: center;
@@ -101,8 +107,6 @@
       padding: 10px;
       width: 100%;
       text-align: left;
-      border: none;
-      outline: none;
       font-size: 16px;
       border-radius: 6px;
       margin-top: 1rem;
@@ -123,8 +127,13 @@
     .content {
       padding: 0 10px;
       display: none;
-      overflow: hidden;
       animation: fadeIn 0.3s ease-in-out;
+    }
+    .category-title {
+      font-weight: bold;
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      color: #444;
     }
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -136,191 +145,195 @@
   <div class="container">
     <h2>My Goals</h2>
     <div class="input-row">
-      <input type="text" id="goalInput" placeholder="Enter your goal...">
+      <input type="text" id="goalInput" placeholder="Enter your goal..." />
+      <select id="timeframe">
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+        <option value="5year">5-Year</option>
+      </select>
+      <select id="category">
+        <option value="Work">Work</option>
+        <option value="Board Game">Board Game</option>
+        <option value="Health">Health</option>
+        <option value="Socializing">Socializing</option>
+        <option value="Other">Other</option>
+      </select>
       <button class="mic-btn" onclick="startVoiceInput()">🎤</button>
     </div>
+    <button class="main-btn" onclick="addGoal()">Add Goal</button>
     <div id="listeningIndicator" class="listening-indicator">Listening...</div>
 
-    <select id="timeframe">
-      <option value="weekly">Weekly</option>
-      <option value="monthly">Monthly</option>
-      <option value="yearly">Yearly</option>
-      <option value="5year">5-Year</option>
-    </select>
-    <button onclick="addGoal()">Add Goal</button>
+    <!-- Collapsible Sections -->
+    <button class="collapsible">Weekly Goals <span class="arrow">▶</span></button>
+    <div class="content" id="weeklySection"></div>
 
-    <button type="button" class="collapsible">Weekly Goals <span class="arrow">▶</span></button>
-    <div class="content"><ul id="weeklyGoals"></ul></div>
+    <button class="collapsible">Monthly Goals <span class="arrow">▶</span></button>
+    <div class="content" id="monthlySection"></div>
 
-    <button type="button" class="collapsible">Monthly Goals <span class="arrow">▶</span></button>
-    <div class="content"><ul id="monthlyGoals"></ul></div>
+    <button class="collapsible">Yearly Goals <span class="arrow">▶</span></button>
+    <div class="content" id="yearlySection"></div>
 
-    <button type="button" class="collapsible">Yearly Goals <span class="arrow">▶</span></button>
-    <div class="content"><ul id="yearlyGoals"></ul></div>
+    <button class="collapsible">5-Year Goals <span class="arrow">▶</span></button>
+    <div class="content" id="5yearSection"></div>
 
-    <button type="button" class="collapsible">5-Year Goals <span class="arrow">▶</span></button>
-    <div class="content"><ul id="fiveYearGoals"></ul></div>
-
-    <button onclick="clearCompletedGoals()">Clear Completed</button>
+    <button class="main-btn" onclick="clearCompletedGoals()" style="margin-top: 1rem;">Clear Completed</button>
   </div>
+<script>
+  const timeframes = ["weekly", "monthly", "yearly", "5year"];
+  const categories = ["Work", "Board Game", "Health", "Socializing", "Other"];
+  const goalData = { weekly: {}, monthly: {}, yearly: {}, "5year": {} };
+  const listeningIndicator = document.getElementById("listeningIndicator");
 
-  <script>
-    const goalLists = {
-      weekly: document.getElementById('weeklyGoals'),
-      monthly: document.getElementById('monthlyGoals'),
-      yearly: document.getElementById('yearlyGoals'),
-      "5year": document.getElementById('fiveYearGoals')
-    };
-    const listeningIndicator = document.getElementById('listeningIndicator');
+  function saveGoals() {
+    localStorage.setItem("goalData", JSON.stringify(goalData));
+  }
 
-    function makeDraggable(listElement, type) {
-      listElement.querySelectorAll("li").forEach((li, index) => {
-        li.setAttribute("draggable", true);
-        li.dataset.index = index;
-        li.dataset.type = type;
+  function loadGoals() {
+    const saved = JSON.parse(localStorage.getItem("goalData") || "{}");
+    Object.keys(saved).forEach(tf => {
+      goalData[tf] = saved[tf];
+    });
+    renderGoals();
+  }
 
-        li.addEventListener("dragstart", (e) => {
-          e.dataTransfer.setData("text/plain", JSON.stringify({
-            index: li.dataset.index,
-            type: li.dataset.type
-          }));
-          li.classList.add("dragging");
-        });
+  function renderGoals() {
+    timeframes.forEach(tf => {
+      const section = document.getElementById(tf + "Section");
+      section.innerHTML = "";
+      categories.forEach(cat => {
+        const goals = goalData[tf][cat] || [];
+        if (goals.length > 0) {
+          const label = document.createElement("div");
+          label.className = "category-title";
+          label.textContent = cat;
+          section.appendChild(label);
 
-        li.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          li.style.borderTop = "2px solid #007bff";
-        });
-
-        li.addEventListener("dragleave", () => {
-          li.style.borderTop = "none";
-        });
-
-        li.addEventListener("drop", (e) => {
-          e.preventDefault();
-          const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-          const fromList = goalLists[data.type];
-          const toIndex = [...listElement.children].indexOf(li);
-          const draggedItem = fromList.children[data.index];
-
-          if (draggedItem && draggedItem !== li) {
-            if (toIndex === listElement.children.length - 1) {
-              listElement.appendChild(draggedItem);
-            } else {
-              listElement.insertBefore(draggedItem, listElement.children[toIndex]);
-            }
-            saveGoals();
-            makeDraggable(listElement, type);
-          }
-          li.style.borderTop = "none";
-          document.querySelectorAll(".dragging").forEach(el => el.classList.remove("dragging"));
-        });
-      });
-    }
-
-    function loadGoals() {
-      const stored = JSON.parse(localStorage.getItem('goals') || '{}');
-      Object.keys(goalLists).forEach(type => {
-        const list = goalLists[type];
-        list.innerHTML = '';
-        (stored[type] || []).forEach(goal => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <span class="${goal.completed ? 'completed' : ''}">${goal.text}</span>
-            <button onclick="toggleComplete(this)" style="background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 4px;">Done</button>
-          `;
-          list.appendChild(li);
-        });
-        makeDraggable(list, type);
-      });
-    }
-
-    function addGoal() {
-      const input = document.getElementById('goalInput');
-      const type = document.getElementById('timeframe').value;
-      if (!input.value.trim()) return;
-
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <span>${input.value}</span>
-        <button onclick="toggleComplete(this)" style="background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 4px;">Done</button>
-      `;
-
-      goalLists[type].appendChild(li);
-      input.value = '';
-      saveGoals();
-      makeDraggable(goalLists[type], type);
-    }
-
-    function saveGoals() {
-      const data = {};
-      Object.keys(goalLists).forEach(type => {
-        data[type] = Array.from(goalLists[type].children).map(li => ({
-          text: li.querySelector('span').textContent,
-          completed: li.querySelector('span').classList.contains('completed')
-        }));
-      });
-      localStorage.setItem('goals', JSON.stringify(data));
-    }
-
-    function toggleComplete(btn) {
-      const item = btn.parentElement.querySelector('span');
-      item.classList.toggle('completed');
-      saveGoals();
-    }
-
-    function clearCompletedGoals() {
-      Object.values(goalLists).forEach(list => {
-        const goals = Array.from(list.children);
-        goals.forEach(goal => {
-          const text = goal.querySelector('span');
-          if (text.classList.contains('completed')) {
-            list.removeChild(goal);
-          }
-        });
-      });
-      saveGoals();
-    }
-
-    document.querySelectorAll(".collapsible").forEach(button => {
-      button.addEventListener("click", function() {
-        this.classList.toggle("active");
-        const arrow = this.querySelector(".arrow");
-        const content = this.nextElementSibling;
-        if (content.style.display === "block") {
-          content.style.display = "none";
-          arrow.innerHTML = "▶";
-        } else {
-          content.style.display = "block";
-          arrow.innerHTML = "▼";
+          const ul = document.createElement("ul");
+          goals.forEach((goal, i) => {
+            const li = document.createElement("li");
+            li.setAttribute("draggable", true);
+            li.dataset.timeframe = tf;
+            li.dataset.category = cat;
+            li.dataset.index = i;
+            li.innerHTML = `
+              <span class="${goal.completed ? "completed" : ""}">${goal.text}</span>
+              <button onclick="toggleComplete(this)">Done</button>
+            `;
+            addDragHandlers(li);
+            ul.appendChild(li);
+          });
+          section.appendChild(ul);
         }
       });
     });
+  }
 
-    function startVoiceInput() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+  function addGoal() {
+    const text = document.getElementById("goalInput").value.trim();
+    const tf = document.getElementById("timeframe").value;
+    const cat = document.getElementById("category").value;
+    if (!text) return;
+    if (!goalData[tf][cat]) goalData[tf][cat] = [];
+    goalData[tf][cat].push({ text, completed: false });
+    document.getElementById("goalInput").value = "";
+    saveGoals();
+    renderGoals();
+  }
 
-      listeningIndicator.style.display = 'block';
-      recognition.start();
+  function toggleComplete(btn) {
+    const li = btn.parentElement;
+    const tf = li.dataset.timeframe;
+    const cat = li.dataset.category;
+    const i = li.dataset.index;
+    goalData[tf][cat][i].completed = !goalData[tf][cat][i].completed;
+    saveGoals();
+    renderGoals();
+  }
 
-      recognition.onresult = function(event) {
-        listeningIndicator.style.display = 'none';
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('goalInput').value = transcript;
-        addGoal();
-      };
+  function clearCompletedGoals() {
+    timeframes.forEach(tf => {
+      categories.forEach(cat => {
+        if (goalData[tf][cat]) {
+          goalData[tf][cat] = goalData[tf][cat].filter(g => !g.completed);
+        }
+      });
+    });
+    saveGoals();
+    renderGoals();
+  }
 
-      recognition.onerror = function(event) {
-        listeningIndicator.style.display = 'none';
-        alert('Voice input failed: ' + event.error);
-      };
-    }
+  function addDragHandlers(el) {
+    el.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({
+        tf: el.dataset.timeframe,
+        cat: el.dataset.category,
+        index: el.dataset.index
+      }));
+    });
 
-    loadGoals();
-  </script>
+    el.addEventListener("dragover", e => {
+      e.preventDefault();
+      el.style.borderTop = "2px solid var(--primary)";
+    });
+
+    el.addEventListener("dragleave", () => {
+      el.style.borderTop = "none";
+    });
+
+    el.addEventListener("drop", e => {
+      e.preventDefault();
+      el.style.borderTop = "none";
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      const srcList = goalData[data.tf][data.cat];
+      const destList = goalData[el.dataset.timeframe][el.dataset.category];
+      const fromItem = srcList.splice(data.index, 1)[0];
+      const dropIndex = Number(el.dataset.index);
+      destList.splice(dropIndex, 0, fromItem);
+      saveGoals();
+      renderGoals();
+    });
+  }
+
+  function startVoiceInput() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    listeningIndicator.style.display = 'block';
+    recognition.start();
+
+    recognition.onresult = function(event) {
+      listeningIndicator.style.display = 'none';
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('goalInput').value = transcript;
+      addGoal();
+    };
+
+    recognition.onerror = function(event) {
+      listeningIndicator.style.display = 'none';
+      alert('Voice input failed: ' + event.error);
+    };
+  }
+
+  // Collapsible section toggles
+  document.querySelectorAll(".collapsible").forEach(button => {
+    button.addEventListener("click", function () {
+      this.classList.toggle("active");
+      const arrow = this.querySelector(".arrow");
+      const content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+        arrow.innerHTML = "▶";
+      } else {
+        content.style.display = "block";
+        arrow.innerHTML = "▼";
+      }
+    });
+  });
+
+  loadGoals();
+</script>
 </body>
 </html>
 
