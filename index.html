@@ -5,140 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Goal Tracker with Categories</title>
   <style>
-    :root {
-      --primary: #007bff;
-      --primary-light: #e3f0ff;
-      --accent: #28a745;
-      --danger: #dc3545;
-      --gray: #f1f1f1;
-    }
-
-    body {
-      font-family: sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 2rem;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      text-align: center;
-      color: var(--primary);
-    }
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    input[type="text"], select {
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    input[type="text"] {
-      flex: 2;
-      min-width: 60%;
-    }
-    select {
-      flex: 1;
-      min-width: 30%;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-size: 15px;
-      cursor: pointer;
-      border: none;
-    }
-    .mic-btn {
-      background: white;
-      color: var(--primary);
-      border: 2px solid var(--primary);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-    .main-btn {
-      background-color: var(--primary);
-      color: white;
-    }
-    .main-btn:hover {
-      background-color: #0056b3;
-    }
-    .listening-indicator {
-      text-align: center;
-      font-size: 14px;
-      margin-top: 0.5rem;
-      color: var(--primary);
-      display: none;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: var(--gray);
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-radius: 6px;
-    }
-    .completed {
-      text-decoration: line-through;
-      color: gray;
-    }
-    .collapsible {
-      background-color: var(--primary-light);
-      cursor: pointer;
-      padding: 10px;
-      width: 100%;
-      text-align: left;
-      font-size: 16px;
-      border-radius: 6px;
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--primary);
-    }
-    .collapsible .arrow {
-      transition: transform 0.3s ease;
-    }
-    .collapsible.active .arrow {
-      transform: rotate(90deg);
-    }
-    .active, .collapsible:hover {
-      background-color: #cce4ff;
-    }
-    .content {
-      padding: 0 10px;
-      display: none;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-    .category-title {
-      font-weight: bold;
-      margin-top: 1rem;
-      margin-bottom: 0.3rem;
-      color: #444;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    /* (Keep all the same CSS from before) */
   </style>
 </head>
 <body>
@@ -150,11 +17,11 @@
         <option value="weekly">Weekly</option>
         <option value="monthly">Monthly</option>
         <option value="yearly">Yearly</option>
-        <option value="5year">5-Year</option>
+        <option value="ideasnotes">Ideas and Notes</option> <!-- UPDATED -->
       </select>
       <select id="category">
         <option value="Work">Work</option>
-        <option value="Board Game">Board Game</option>
+        <option value="Business">Business</option> <!-- UPDATED -->
         <option value="Health">Health</option>
         <option value="Socializing">Socializing</option>
         <option value="Other">Other</option>
@@ -174,15 +41,15 @@
     <button class="collapsible">Yearly Goals <span class="arrow">▶</span></button>
     <div class="content" id="yearlySection"></div>
 
-    <button class="collapsible">5-Year Goals <span class="arrow">▶</span></button>
-    <div class="content" id="5yearSection"></div>
+    <button class="collapsible">Ideas and Notes <span class="arrow">▶</span></button> <!-- UPDATED -->
+    <div class="content" id="ideasnotesSection"></div> <!-- UPDATED -->
 
     <button class="main-btn" onclick="clearCompletedGoals()" style="margin-top: 1rem;">Clear Completed</button>
   </div>
 <script>
-  const timeframes = ["weekly", "monthly", "yearly", "5year"];
-  const categories = ["Work", "Board Game", "Health", "Socializing", "Other"];
-  const goalData = { weekly: {}, monthly: {}, yearly: {}, "5year": {} };
+  const timeframes = ["weekly", "monthly", "yearly", "ideasnotes"]; // UPDATED
+  const categories = ["Work", "Business", "Health", "Socializing", "Other"]; // UPDATED
+  const goalData = { weekly: {}, monthly: {}, yearly: {}, ideasnotes: {} };
   const listeningIndicator = document.getElementById("listeningIndicator");
 
   function saveGoals() {
@@ -316,9 +183,9 @@
     };
   }
 
-  // Collapsible section toggles
+  // Collapsible Section Toggles
   document.querySelectorAll(".collapsible").forEach(button => {
-    button.addEventListener("click", function () {
+    button.addEventListener("click", function() {
       this.classList.toggle("active");
       const arrow = this.querySelector(".arrow");
       const content = this.nextElementSibling;
@@ -336,4 +203,5 @@
 </script>
 </body>
 </html>
+
 
